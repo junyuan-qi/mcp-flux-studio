@@ -1,56 +1,95 @@
-# Flux MCP Server
+# MCP Flux Studio
 
-A Model Context Protocol (MCP) server for the Flux image generation API. This server provides tools for generating, manipulating, and controlling image generation through the Flux API.
+A powerful Model Context Protocol (MCP) server that brings Flux's advanced image generation capabilities to your AI coding assistants. This server enables direct integration of Flux's image generation, manipulation, and control features into Cursor and Windsurf (Codeium) IDEs.
 
-## Features
+## Overview
 
-- Image generation from text prompts
-- Image-to-image generation
-- Inpainting with customizable masks
-- Control-based generation (canny, depth, pose)
-- Support for multiple Flux models
+MCP Flux Studio bridges the gap between AI coding assistants and Flux's powerful image generation API, allowing seamless integration of image generation capabilities directly into your development workflow.
 
-## Installation
+### Features
 
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/flux-mcp-server.git
-cd flux-mcp-server
-```
+- **Image Generation**
+  - Text-to-image generation with precise control
+  - Multiple model support (flux.1.1-pro, flux.1-pro, flux.1-dev, flux.1.1-ultra)
+  - Customizable aspect ratios and dimensions
 
-2. Install dependencies:
-```bash
-npm install
-```
+- **Image Manipulation**
+  - Image-to-image transformation
+  - Inpainting with customizable masks
+  - Resolution upscaling and enhancement
 
-3. Build the server:
-```bash
-npm run build
-```
+- **Advanced Controls**
+  - Edge-based generation (canny)
+  - Depth-aware generation
+  - Pose-guided generation
 
-## Configuration
+- **IDE Integration**
+  - Full support for Cursor (v0.45.7+)
+  - Compatible with Windsurf/Codeium Cascade (Wave 3+)
+  - Seamless tool invocation through AI assistants
 
-1. Create a `.env` file in the root directory:
-```env
-FLUX_PATH=/path/to/flux/installation
-BFL_API_KEY=your_flux_api_key
-```
+## Quick Start
 
-2. Add the server to your MCP settings file (typically located at `~/Library/Application Support/Cursor/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json`):
-```json
-{
-  "mcpServers": {
-    "flux": {
-      "command": "/opt/homebrew/bin/node",
-      "args": ["/path/to/flux-mcp-server/build/index.js"],
-      "env": {
-        "FLUX_PATH": "/path/to/flux/installation",
-        "BFL_API_KEY": "your_flux_api_key"
-      }
-    }
-  }
-}
-```
+1. **Prerequisites**
+   - Node.js 18+
+   - Python 3.12+
+   - Flux API key
+   - Compatible IDE (Cursor or Windsurf)
+
+2. **Installation**
+   ```bash
+   git clone https://github.com/jmanhype/mcp-flux-studio.git
+   cd mcp-flux-studio
+   npm install
+   npm run build
+   ```
+
+3. **Basic Configuration**
+   ```env
+   BFL_API_KEY=your_flux_api_key
+   FLUX_PATH=/path/to/flux/installation
+   ```
+
+For detailed setup instructions, including IDE-specific configuration and troubleshooting, see our [Installation Guide](docs/INSTALLATION.md).
+
+## Documentation
+
+- [Installation Guide](docs/INSTALLATION.md) - Comprehensive setup instructions
+- [API Documentation](docs/API.md) - Detailed tool documentation
+- [Example Usage](examples/tool-examples.md) - Real-world usage examples
+- [Contributing Guidelines](docs/CONTRIBUTING.md) - How to contribute
+
+## IDE Integration
+
+### Cursor (v0.45.7+)
+
+MCP Flux Studio integrates seamlessly with Cursor's AI assistant:
+
+1. **Configuration**
+   - Configure via Settings > Features > MCP
+   - Supports both stdio and SSE connections
+   - Environment variables can be set via wrapper scripts
+
+2. **Usage**
+   - Tools automatically available to Cursor's AI assistant
+   - Tool invocations require user approval
+   - Real-time feedback on generation progress
+
+### Windsurf/Codeium (Wave 3+)
+
+Integration with Windsurf's Cascade AI:
+
+1. **Configuration**
+   - Edit `~/.codeium/windsurf/mcp_config.json`
+   - Supports process-based tool execution
+   - Environment variables configured in JSON
+
+2. **Usage**
+   - Access tools through Cascade's MCP toolbar
+   - Automatic tool discovery and loading
+   - Integrated with Cascade's AI capabilities
+
+For detailed IDE-specific setup instructions, see the [Installation Guide](docs/INSTALLATION.md).
 
 ## Usage
 
