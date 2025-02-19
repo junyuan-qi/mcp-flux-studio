@@ -1,0 +1,64 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Build output
+build/
+dist/
+*.tsbuildinfo
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Generated files
+generated/
+outputs/
+*.generated.*
+
+# Cache
+.cache/
+.npm/
+.eslintcache
+.prettiercache
+
+# API keys and secrets
+*.pem
+*.key
+*.cert
+*.secret
+
+# Debug files
+*.debug
+debug/
+
+# Local development
+local/
+dev/
