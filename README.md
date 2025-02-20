@@ -1,5 +1,7 @@
 # MCP Flux Studio
 
+[![smithery badge](https://smithery.ai/badge/@jmanhype/mcp-flux-studio)](https://smithery.ai/server/@jmanhype/mcp-flux-studio)
+
 A powerful Model Context Protocol (MCP) server that brings Flux's advanced image generation capabilities to your AI coding assistants. This server enables direct integration of Flux's image generation, manipulation, and control features into Cursor and Windsurf (Codeium) IDEs.
 
 ## Overview
@@ -37,6 +39,16 @@ MCP Flux Studio bridges the gap between AI coding assistants and Flux's powerful
    - Compatible IDE (Cursor or Windsurf)
 
 2. **Installation**
+
+### Installing via Smithery
+
+To install Flux Studio for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@jmanhype/mcp-flux-studio):
+
+```bash
+npx -y @smithery/cli install @jmanhype/mcp-flux-studio --client claude
+```
+
+### Manual Installation
    ```bash
    git clone https://github.com/jmanhype/mcp-flux-studio.git
    cd mcp-flux-studio
