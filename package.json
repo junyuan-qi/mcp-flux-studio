@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc && chmod +x build/index.js",
-    "test": "jest",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write \"src/**/*.ts\"",
     "start": "node build/index.js",
