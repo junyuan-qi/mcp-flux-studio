@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { CallToolRequestSchema, ErrorCode, ListToolsRequestSchema, McpError, } from '@modelcontextprotocol/sdk/types.js';
+import { CallToolRequestSchema, ErrorCode, ListToolsRequestSchema, McpError, CallToolRequest, } from '@modelcontextprotocol/sdk/types.js';
 import { spawn } from 'child_process';
 
 class FluxServer {
+    private server: Server;
+    private fluxPath: string;
+
     constructor() {
         this.server = new Server({
             name: 'flux-server',
@@ -18,17 +21,17 @@ class FluxServer {
         this.fluxPath = process.env.FLUX_PATH || '/Users/speed/CascadeProjects/flux';
         this.setupToolHandlers();
         // Error handling
-        this.server.onerror = (error) => console.error('[MCP Error]', error);
+        this.server.onerror = (error: Error) => console.error('[MCP Error]', error);
         process.on('SIGINT', async () => {
             await this.server.close();
             process.exit(0);
         });
     }
 
-    async runPythonCommand(args) {
+    async runPythonCommand(args: string[]): Promise<string> {
         return new Promise((resolve, reject) => {
             // Use python from virtual environment if available
-            const pythonPath = process.env.VIRTUAL_ENV ? 
+            const pythonPath = process.env.VIRTUAL_ENV ?
                 `${process.env.VIRTUAL_ENV}/bin/python` : 'python3';
 
             const childProcess = spawn(pythonPath, ['fluxcli.py', ...args], {
@@ -57,7 +60,7 @@ class FluxServer {
         });
     }
 
-    setupToolHandlers() {
+    setupToolHandlers(): void {
         this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
             tools: [
                 {
@@ -218,61 +221,61 @@ class FluxServer {
             ],
         }));
 
-        this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
+        this.server.setRequestHandler(CallToolRequestSchema, async (request: CallToolRequest) => {
             try {
                 switch (request.params.name) {
                     case 'generate': {
-                        const args = request.params.arguments;
+                        const args = (request.params.arguments ?? {}) as Record<string, any>;
                         const cmdArgs = ['generate'];
-                        cmdArgs.push('--prompt', args.prompt);
-                        if (args.model) cmdArgs.push('--model', args.model);
-                        if (args.aspect_ratio) cmdArgs.push('--aspect-ratio', args.aspect_ratio);
-                        if (args.width) cmdArgs.push('--width', args.width.toString());
-                        if (args.height) cmdArgs.push('--height', args.height.toString());
-                        if (args.output) cmdArgs.push('--output', args.output);
+                        cmdArgs.push('--prompt', String(args.prompt));
+                        if (args.model) cmdArgs.push('--model', String(args.model));
+                        if (args.aspect_ratio) cmdArgs.push('--aspect-ratio', String(args.aspect_ratio));
+                        if (args.width) cmdArgs.push('--width', String(args.width));
+                        if (args.height) cmdArgs.push('--height', String(args.height));
+                        if (args.output) cmdArgs.push('--output', String(args.output));
                         const output = await this.runPythonCommand(cmdArgs);
                         return {
                             content: [{ type: 'text', text: output }],
                         };
                     }
                     case 'img2img': {
-                        const args = request.params.arguments;
+                        const args = (request.params.arguments ?? {}) as Record<string, any>;
                         const cmdArgs = ['img2img'];
-                        cmdArgs.push('--image', args.image);
-                        cmdArgs.push('--prompt', args.prompt);
-                        cmdArgs.push('--name', args.name);
-                        if (args.model) cmdArgs.push('--model', args.model);
-                        if (args.strength) cmdArgs.push('--strength', args.strength.toString());
-                        if (args.width) cmdArgs.push('--width', args.width.toString());
-                        if (args.height) cmdArgs.push('--height', args.height.toString());
-                        if (args.output) cmdArgs.push('--output', args.output);
+                        cmdArgs.push('--image', String(args.image));
+                        cmdArgs.push('--prompt', String(args.prompt));
+                        cmdArgs.push('--name', String(args.name));
+                        if (args.model) cmdArgs.push('--model', String(args.model));
+                        if (args.strength) cmdArgs.push('--strength', String(args.strength));
+                        if (args.width) cmdArgs.push('--width', String(args.width));
+                        if (args.height) cmdArgs.push('--height', String(args.height));
+                        if (args.output) cmdArgs.push('--output', String(args.output));
                         const output = await this.runPythonCommand(cmdArgs);
                         return {
                             content: [{ type: 'text', text: output }],
                         };
                     }
                     case 'inpaint': {
-                        const args = request.params.arguments;
+                        const args = (request.params.arguments ?? {}) as Record<string, any>;
                         const cmdArgs = ['inpaint'];
-                        cmdArgs.push('--image', args.image);
-                        cmdArgs.push('--prompt', args.prompt);
-                        if (args.mask_shape) cmdArgs.push('--mask-shape', args.mask_shape);
-                        if (args.position) cmdArgs.push('--position', args.position);
-                        if (args.output) cmdArgs.push('--output', args.output);
+                        cmdArgs.push('--image', String(args.image));
+                        cmdArgs.push('--prompt', String(args.prompt));
+                        if (args.mask_shape) cmdArgs.push('--mask-shape', String(args.mask_shape));
+                        if (args.position) cmdArgs.push('--position', String(args.position));
+                        if (args.output) cmdArgs.push('--output', String(args.output));
                         const output = await this.runPythonCommand(cmdArgs);
                         return {
                             content: [{ type: 'text', text: output }],
                         };
                     }
                     case 'control': {
-                        const args = request.params.arguments;
+                        const args = (request.params.arguments ?? {}) as Record<string, any>;
                         const cmdArgs = ['control'];
-                        cmdArgs.push('--type', args.type);
-                        cmdArgs.push('--image', args.image);
-                        cmdArgs.push('--prompt', args.prompt);
-                        if (args.steps) cmdArgs.push('--steps', args.steps.toString());
-                        if (args.guidance) cmdArgs.push('--guidance', args.guidance.toString());
-                        if (args.output) cmdArgs.push('--output', args.output);
+                        cmdArgs.push('--type', String(args.type));
+                        cmdArgs.push('--image', String(args.image));
+                        cmdArgs.push('--prompt', String(args.prompt));
+                        if (args.steps) cmdArgs.push('--steps', String(args.steps));
+                        if (args.guidance) cmdArgs.push('--guidance', String(args.guidance));
+                        if (args.output) cmdArgs.push('--output', String(args.output));
                         const output = await this.runPythonCommand(cmdArgs);
                         return {
                             content: [{ type: 'text', text: output }],
@@ -295,7 +298,7 @@ class FluxServer {
         });
     }
 
-    async run() {
+    async run(): Promise<void> {
         const transport = new StdioServerTransport();
         await this.server.connect(transport);
         console.error('Flux MCP server running on stdio');
