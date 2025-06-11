@@ -4,19 +4,34 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequest, CallToolRequestSchema, ErrorCode, ListToolsRequestSchema, McpError } from '@modelcontextprotocol/sdk/types.js';
 import fs from 'fs/promises';
 
+interface UserConfig {
+  apiKey: string;
+}
+
 class FluxKontextServer {
   private server: Server;
-  private apiKey: string;
+  private apiKey: string = '';
 
   constructor() {
-    this.apiKey = process.env.BFL_API_KEY || '';
-    if (!this.apiKey) {
-      throw new Error('BFL_API_KEY must be provided in environment');
-    }
-
     this.server = new Server(
       { name: 'flux-kontext-server', version: '0.1.0' },
-      { capabilities: { tools: {} } }
+      { 
+        capabilities: { 
+          tools: {},
+          configuration: {
+            schema: {
+              type: 'object',
+              properties: {
+                apiKey: {
+                  type: 'string',
+                  description: 'Black Forest Labs API key'
+                }
+              },
+              required: ['apiKey']
+            }
+          }
+        } 
+      }
     );
 
     this.setupHandlers();
@@ -28,58 +43,62 @@ class FluxKontextServer {
   }
 
   private setupHandlers() {
-    this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
-      tools: [
-        {
-          name: 'generateImage',
-          description: 'Generate an image with Flux Kontext',
-          inputSchema: {
+    this.server.setRequestHandler(ListToolsRequestSchema, async () => {
+      const tools = {
+        generateImage: {
+          description: 'Generate an image from a text prompt',
+          parameters: {
             type: 'object',
             properties: {
-              prompt: { type: 'string', description: 'Text prompt to generate' },
-              negative_prompt: { type: 'string', description: 'Negative prompt', nullable: true },
-              width: { type: 'number', description: 'Output width', default: 1024 },
-              height: { type: 'number', description: 'Output height', default: 1024 },
-              steps: { type: 'number', description: 'Inference steps', default: 30 },
+              prompt: { type: 'string', description: 'Text prompt for image generation' },
+              negative_prompt: { type: 'string', description: 'Negative prompt to avoid certain elements' },
+              width: { type: 'number', description: 'Image width', default: 1024 },
+              height: { type: 'number', description: 'Image height', default: 1024 },
+              steps: { type: 'number', description: 'Number of inference steps', default: 30 },
               guidance_scale: { type: 'number', description: 'Guidance scale', default: 7.5 }
             },
             required: ['prompt']
           }
         },
-        {
-          name: 'editImage',
-          description: 'Edit an image with Flux Kontext',
-          inputSchema: {
+        editImage: {
+          description: 'Edit an existing image using a prompt and optional mask',
+          parameters: {
             type: 'object',
             properties: {
-              image: { type: 'string', description: 'Path to image file or base64 data' },
-              mask: { type: 'string', description: 'Optional mask image' },
-              prompt: { type: 'string', description: 'Edit prompt' },
-              negative_prompt: { type: 'string', description: 'Negative prompt', nullable: true },
-              width: { type: 'number', description: 'Output width', default: 1024 },
-              height: { type: 'number', description: 'Output height', default: 1024 },
-              steps: { type: 'number', description: 'Inference steps', default: 30 },
+              prompt: { type: 'string', description: 'Text prompt for image editing' },
+              negative_prompt: { type: 'string', description: 'Negative prompt to avoid certain elements' },
+              image: { type: 'string', description: 'Base64 encoded image to edit' },
+              mask: { type: 'string', description: 'Base64 encoded mask image (optional)' },
+              width: { type: 'number', description: 'Image width', default: 1024 },
+              height: { type: 'number', description: 'Image height', default: 1024 },
+              steps: { type: 'number', description: 'Number of inference steps', default: 30 },
               guidance_scale: { type: 'number', description: 'Guidance scale', default: 7.5 }
             },
-            required: ['image', 'prompt']
+            required: ['prompt', 'image']
           }
         }
-      ]
-    }));
+      };
+      return { tools };
+    });
 
     this.server.setRequestHandler(CallToolRequestSchema, async (req: CallToolRequest) => {
       try {
+        if (!this.apiKey) {
+          throw new McpError(ErrorCode.InvalidRequest, 'API key must be provided in user configuration');
+        }
+
+        let result: string;
         if (req.params.name === 'generateImage') {
-          const resUrl = await this.generate(req.params.arguments ?? {});
-          return { content: [{ type: 'text', text: resUrl }] };
+          result = await this.generate(req.params.arguments ?? {});
+        } else if (req.params.name === 'editImage') {
+          result = await this.edit(req.params.arguments ?? {});
+        } else {
+          throw new McpError(ErrorCode.InvalidRequest, `Unknown tool: ${req.params.name}`);
         }
-        if (req.params.name === 'editImage') {
-          const resUrl = await this.edit(req.params.arguments ?? {});
-          return { content: [{ type: 'text', text: resUrl }] };
-        }
-        throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${req.params.name}`);
-      } catch (err) {
-        return { content: [{ type: 'text', text: (err as Error).message }], isError: true };
+        return { content: [{ type: 'text', text: result }] };
+      } catch (error) {
+        if (error instanceof McpError) throw error;
+        throw new McpError(ErrorCode.InternalError, error instanceof Error ? error.message : String(error));
       }
     });
   }
@@ -153,7 +172,7 @@ class FluxKontextServer {
     return this.requestBfl(payload);
   }
 
-  async run() {
+  public async run() {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
     console.error('Flux Kontext MCP server running');
@@ -162,3 +181,4 @@ class FluxKontextServer {
 
 const server = new FluxKontextServer();
 server.run().catch((err) => console.error(err));
+
