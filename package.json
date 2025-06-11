@@ -1,6 +1,6 @@
 {
-  "name": "flux-mcp-server",
-  "version": "1.0.0",
+  "name": "mcp-flux-studio",
+  "version": "0.1.0",
   "description": "Model Context Protocol server for Flux image generation API",
   "main": "build/index.js",
   "type": "module",
